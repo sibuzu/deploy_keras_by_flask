@@ -21,6 +21,7 @@ import re
 import sys 
 #for reading operating system data
 import os
+import base64
 #tell our app where our saved model is
 sys.path.append(os.path.abspath("./model"))
 from load import * 
@@ -36,7 +37,7 @@ def convertImage(imgData1):
 	imgstr = re.search(r'base64,(.*)',imgData1).group(1)
 	#print(imgstr)
 	with open('output.png','wb') as output:
-		output.write(imgstr.decode('base64'))
+		output.write(base64.b64decode(imgstr))
 	
 
 @app.route('/')
@@ -51,10 +52,10 @@ def predict():
 	#to input the user drawn character as an image into the model
 	#perform inference, and return the classification
 	#get the raw data format of the image
-	imgData = request.get_data()
+	imgData = request.get_data().decode('utf-8')
 	#encode it into a suitable format
 	convertImage(imgData)
-	print "debug"
+	print("debug")
 	#read the image into memory
 	x = imread('output.png',mode='L')
 	#compute a bit-wise inversion so black becomes white and vice versa
@@ -64,14 +65,14 @@ def predict():
 	#imshow(x)
 	#convert to a 4D tensor to feed into our model
 	x = x.reshape(1,28,28,1)
-	print "debug2"
+	print("debug2")
 	#in our computation graph
 	with graph.as_default():
 		#perform the prediction
 		out = model.predict(x)
 		print(out)
 		print(np.argmax(out,axis=1))
-		print "debug3"
+		print("debug3")
 		#convert the response to a string
 		response = np.array_str(np.argmax(out,axis=1))
 		return response	
@@ -79,7 +80,7 @@ def predict():
 
 if __name__ == "__main__":
 	#decide what port to run the app in
-	port = int(os.environ.get('PORT', 5000))
+	port = int(os.environ.get('PORT', 5800))
 	#run the app locally on the givn port
 	app.run(host='0.0.0.0', port=port)
 	#optional if we want to run in debugging mode
