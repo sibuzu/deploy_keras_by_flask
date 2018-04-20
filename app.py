@@ -8,6 +8,7 @@
 #for you automatically.
 #requests are objects that flask handles (get set post, etc)
 from flask import Flask, render_template,request
+from werkzeug.exceptions import BadRequest
 #scientific computing library for saving, reading, and resizing images
 from scipy.misc import imsave, imread, imresize
 #for matrix math
@@ -25,6 +26,10 @@ import base64
 #tell our app where our saved model is
 sys.path.append(os.path.abspath("./model"))
 from load import * 
+from io import StringIO
+
+
+
 #initalize our flask app
 app = Flask(__name__)
 #global vars for easy reusability
@@ -45,6 +50,22 @@ def index():
 	#initModel()
 	#render out pre-built HTML file right on the index page
 	return render_template("index.html")
+
+@app.route('/deep_david/',methods=['GET','POST'])
+def deep_david():
+	model = request.values.get("model")
+	inputs = request.values.get("inputs")
+	print("deep model:", model)
+	print("inputs:", inputs)
+	ary = np.loadtxt(StringIO(inputs), delimiter=',')
+	print("ary:", ary.shape, ary)
+	if model == "bear":
+		pass
+	elif model == "bull":
+		pass
+	else:
+		raise BadRequest('not support model: ' + str(model))
+	return "DO " + model
 
 @app.route('/predict/',methods=['GET','POST'])
 def predict():
